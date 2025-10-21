@@ -1,0 +1,64 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Nav
+@inject FSI.BusinessProcessManagement.Services.AuthService Auth
+
+<div class="app-shell">
+    <header class="app-header shadow-sm">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <img src="favicon.ico" alt="FSI" class="logo" />
+                <a class="brand" href="/">FSI BPM</a>
+            </div>
+
+            <nav class="nav gap-2 d-none d-md-flex">
+                <NavLink class="btn btn-link nav-item" href="/" Match="NavLinkMatch.All">Home</NavLink>
+                <NavLink class="btn btn-link nav-item" href="/dashboard">Dashboard</NavLink>
+                <NavLink class="btn btn-link nav-item" href="/processes">Processos</NavLink>
+            </nav>
+
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="text-muted small">
+                            @GetUserDisplayName(context.User)
+                        </span>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="DoLogout">Sair</button>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="btn btn-sm btn-primary" href="/login">Entrar</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </header>
+
+    <div class="app-body">
+        <aside class="app-aside d-none d-md-block">
+            <FSI.BusinessProcessManagement.Web.Components.Nav.NavMenu />
+        </aside>
+
+        <main class="app-main p-3">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code {
+    private async Task DoLogout()
+    {
+        await Auth.LogoutAsync();
+        Nav.NavigateTo("/login", forceLoad: true);
+    }
+
+    private static string GetUserDisplayName(System.Security.Claims.ClaimsPrincipal user)
+    {
+        var name = user.Identity?.Name
+                   ?? user.FindFirst("name")?.Value
+                   ?? user.FindFirst("unique_name")?.Value
+                   ?? user.FindFirst("preferred_username")?.Value
+                   ?? user.FindFirst("sub")?.Value;
+
+        return string.IsNullOrWhiteSpace(name) ? "Usuário" : name!;
+    }
+}

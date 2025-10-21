@@ -1,0 +1,11 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
+
+<h1 class="mb-3">Bem-vindo ao FSI BPM</h1>
+
+<p>Use o menu para navegar entre <b>Dashboard</b>, <b>Processos</b> e outras páginas.</p>
+
+<NavLink class="btn btn-primary me-2" href="/dashboard">Ir para Dashboard</NavLink>
+<NavLink class="btn btn-outline-secondary" href="/processes">Ver Processos</NavLink>

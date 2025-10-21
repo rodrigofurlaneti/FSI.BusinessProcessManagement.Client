@@ -1,0 +1,34 @@
+﻿@page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
+
+<h1>Dashboard</h1>
+<p class="text-muted">Resumo das operações do BPM no dia.</p>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Processos em andamento</h5>
+                <p class="display-6">--</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Concluídos hoje</h5>
+                <p class="display-6">--</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Pendências</h5>
+                <p class="display-6">--</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,59 @@
+﻿@page "/login"
+@using FSI.BusinessProcessManagement.Services
+@inject AuthService Auth
+@inject NavigationManager Nav
+@layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
+
+<h1 class="mb-3">Login</h1>
+
+<div class="card" style="max-width:520px">
+    <div class="card-body">
+        <EditForm Model="_vm" OnValidSubmit="DoLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label class="form-label">Usuário</label>
+                <InputText class="form-control" @bind-Value="_vm.Username" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Senha</label>
+                <InputText class="form-control" @bind-Value="_vm.Password" type="password" />
+            </div>
+
+            <button class="btn btn-primary" disabled="@_loading">
+                @(_loading ? "Entrando..." : "Entrar")
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <div class="alert alert-danger mt-3">@_error</div>
+            }
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private record LoginVm
+    {
+        [Required] public string Username { get; set; } = string.Empty;
+        [Required] public string Password { get; set; } = string.Empty;
+    }
+
+    private LoginVm _vm = new();
+    private bool _loading;
+    private string? _error;
+
+    private async Task DoLogin()
+    {
+        _loading = true;
+        _error = null;
+
+        var ok = await Auth.LoginAsync(_vm.Username, _vm.Password);
+        _loading = false;
+
+        if (ok) Nav.NavigateTo("/", forceLoad: true);
+        else _error = "Usuário ou senha inválidos.";
+    }
+}

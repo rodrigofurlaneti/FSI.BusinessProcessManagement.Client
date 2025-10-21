@@ -1,0 +1,134 @@
+﻿@page "/processes"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using FSI.BusinessProcessManagement.Services
+@using FSI.BusinessProcessManagement.Models.Dto
+
+@attribute [Authorize]
+@layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
+@inject ProcessService ProcessSvc
+
+<h1>Processos</h1>
+
+@if (_loading)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Criar novo processo</h5>
+            <EditForm Model="_novo" OnValidSubmit="CreateAsync">
+                <DataAnnotationsValidator />
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Nome</label>
+                        <InputText class="form-control" @bind-Value="_novo.Name" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Setor (ID opcional)</label>
+                        <InputNumber TValue="long?" class="form-control" @bind-Value="_novo.DepartmentId" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Descrição</label>
+                        <InputText class="form-control" @bind-Value="_novo.Description" />
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-primary" type="submit" disabled="@_creating">
+                            @(_creating ? "Salvando..." : "Salvar")
+                        </button>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <div class="text-danger mt-2">@_error</div>
+                }
+            </EditForm>
+        </div>
+    </div>
+
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th style="width:100px">ID</th>
+                <th>Nome</th>
+                <th style="width:160px">SetorId</th>
+                <th>Descrição</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_itens.Count == 0)
+            {
+                <tr><td colspan="4" class="text-center text-muted">Sem processos ainda.</td></tr>
+            }
+            else
+            {
+                @foreach (var p in _itens)
+                {
+                    <tr>
+                        <td>@p.Id</td>
+                        <td>@p.Name</td>
+                        <td>@(p.DepartmentId?.ToString() ?? "-")</td>
+                        <td>@p.Description</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool _loading = true;
+    private bool _creating = false;
+    private string? _error;
+    private List<ProcessDto> _itens = new();
+    private ProcessDto _novo = new();
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var data = await ProcessSvc.GetAllAsync();
+            _itens = data?.ToList() ?? new List<ProcessDto>();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Falha ao carregar: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_novo.Name))
+        {
+            _error = "Informe o nome do processo.";
+            return;
+        }
+
+        _creating = true;
+        _error = null;
+        try
+        {
+            await ProcessSvc.CreateAsync(_novo.Name, _novo.DepartmentId, _novo.Description);
+            _novo = new();
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Erro ao criar: {ex.Message}";
+        }
+        finally
+        {
+            _creating = false;
+        }
+    }
+}
