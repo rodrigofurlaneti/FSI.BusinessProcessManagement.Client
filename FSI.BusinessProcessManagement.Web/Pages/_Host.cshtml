@@ -1,8 +1,8 @@
-﻿@page
+﻿@page "/"
 @namespace FSI.BusinessProcessManagement.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
-    ViewData["Title"] = "FSI BPM";
     Layout = "_Layout";
 }
-<component type="typeof(FSI.BusinessProcessManagement.Web.App)" render-mode="ServerPrerendered" />
+
+<component type="typeof(FSI.BusinessProcessManagement.Web.App)" render-mode="Server" />
