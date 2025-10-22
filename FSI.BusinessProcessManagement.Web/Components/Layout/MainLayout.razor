@@ -7,29 +7,24 @@
     <header class="app-header shadow-sm">
         <div class="container-fluid d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
-                <img src="favicon.ico" alt="FSI" class="logo" />
-                <a class="brand" href="/">FSI BPM</a>
+                <img src="processo.png" alt="Gestão de processos de negócio" class="logo" />
+                <a class="brand" href="/">Gestão de processos</a>
             </div>
-
-            <nav class="nav gap-2 d-none d-md-flex">
-                <NavLink class="btn btn-link nav-item" href="/" Match="NavLinkMatch.All">Home</NavLink>
-                <NavLink class="btn btn-link nav-item" href="/dashboard">Dashboard</NavLink>
-                <NavLink class="btn btn-link nav-item" href="/processes">Processos</NavLink>
-            </nav>
-
-            <AuthorizeView>
-                <Authorized>
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="text-muted small">
-                            @GetUserDisplayName(context.User)
-                        </span>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="DoLogout">Sair</button>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <a class="btn btn-sm btn-primary" href="/login">Entrar</a>
-                </NotAuthorized>
-            </AuthorizeView>
+            <div class="app-body">
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="text-muted small">
+                                @GetUserDisplayName(context.User)
+                            </span>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="DoLogout">Sair</button>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a class="btn btn-sm btn-primary" href="/login">Entrar</a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
         </div>
     </header>
 

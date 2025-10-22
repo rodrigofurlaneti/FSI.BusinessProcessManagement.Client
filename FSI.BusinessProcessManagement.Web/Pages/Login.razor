@@ -1,36 +1,39 @@
 ﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
 @using FSI.BusinessProcessManagement.Services
 @inject AuthService Auth
 @inject NavigationManager Nav
 @layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
 
-<h1 class="mb-3">Login</h1>
+<div class="auth-center">
+    <div class="card w-100" style="max-width:520px">
+        <div class="card-body">
+            <h1 class="h3 mb-4 text-center">Login</h1>
 
-<div class="card" style="max-width:520px">
-    <div class="card-body">
-        <EditForm Model="_vm" OnValidSubmit="DoLogin">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
+            <EditForm Model="_vm" OnValidSubmit="DoLogin">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-            <div class="mb-3">
-                <label class="form-label">Usuário</label>
-                <InputText class="form-control" @bind-Value="_vm.Username" />
-            </div>
+                <div class="mb-3">
+                    <label class="form-label">Usuário</label>
+                    <InputText class="form-control" @bind-Value="_vm.Username" />
+                </div>
 
-            <div class="mb-3">
-                <label class="form-label">Senha</label>
-                <InputText class="form-control" @bind-Value="_vm.Password" type="password" />
-            </div>
+                <div class="mb-3">
+                    <label class="form-label">Senha</label>
+                    <InputText class="form-control" @bind-Value="_vm.Password" type="password" />
+                </div>
 
-            <button class="btn btn-primary" disabled="@_loading">
-                @(_loading ? "Entrando..." : "Entrar")
-            </button>
+                <button class="btn btn-primary w-100" disabled="@_loading">
+                    @(_loading ? "Entrando..." : "Entrar")
+                </button>
 
-            @if (!string.IsNullOrWhiteSpace(_error))
-            {
-                <div class="alert alert-danger mt-3">@_error</div>
-            }
-        </EditForm>
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <div class="alert alert-danger mt-3">@_error</div>
+                }
+            </EditForm>
+        </div>
     </div>
 </div>
 

@@ -1,5 +1,5 @@
 using Blazored.LocalStorage;
-using FSI.BusinessProcessManagement.Services;               // se você separou Services
+using FSI.BusinessProcessManagement.Services;
 using FSI.BusinessProcessManagement.Services.Auth;
 using FSI.BusinessProcessManagement.Services.Http;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -8,13 +8,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+
 builder.Services.AddAuthorizationCore();
 
 builder.Services.AddBlazoredLocalStorage();
-
-// Auth + HTTP
 builder.Services.AddScoped<TokenAccessor>();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+
+builder.Services.AddHttpClient("ApiAnon", http =>
+{
+    http.BaseAddress = new Uri(builder.Configuration["Api:BaseUrl"]!);
+});
+
 builder.Services.AddScoped<AuthHeaderHandler>();
 builder.Services.AddHttpClient<ApiClient>(http =>
 {

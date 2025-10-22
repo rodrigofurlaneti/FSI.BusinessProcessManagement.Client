@@ -1,69 +1,25 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
 
-<nav class="app-sidebar h-100 d-flex flex-column">
-    <div class="px-3 py-3 border-bottom sidebar-header">
-        <div class="fw-bold text-white">Navegação</div>
-        <div class="text-muted small">Acesso rápido</div>
-    </div>
+<AuthorizeView>
+    <Authorized>
+        <nav class="sidebar">
+            <h5>Navegação</h5>
+            <ul>
+                <li><NavLink href="/">Home</NavLink></li>
+                <li><NavLink href="/dashboard">Dashboard</NavLink></li>
+                <li><NavLink href="/processos">Processos</NavLink></li>
+                <li><NavLink href="/setores">Setores</NavLink></li>
+                <li><NavLink href="/usuarios">Usuários</NavLink></li>
+                <li><NavLink href="/perfis">Perfis</NavLink></li>
+                <li><NavLink href="/telas">Telas</NavLink></li>
+                <li><NavLink href="/permissoes">Permissões</NavLink></li>
+            </ul>
+        </nav>
+    </Authorized>
 
-    <div class="flex-grow-1 overflow-auto">
-        <ul class="nav flex-column sidebar-list">
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
-                    <span class="bi bi-house-door me-2"></span> Home
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/dashboard">
-                    <span class="bi bi-speedometer2 me-2"></span> Dashboard
-                </NavLink>
-            </li>
-            <li class="nav-item mt-2 px-3 text-muted text-uppercase small">Processos</li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/processes">
-                    <span class="bi bi-diagram-3 me-2"></span> Processos
-                </NavLink>
-            </li>
-
-            <li class="nav-item mt-3 px-3 text-muted text-uppercase small">Cadastros</li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/departments">
-                    <span class="bi bi-building me-2"></span> Setores
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/users">
-                    <span class="bi bi-people me-2"></span> Usuários
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/roles">
-                    <span class="bi bi-person-badge me-2"></span> Perfis
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/screens">
-                    <span class="bi bi-columns-gap me-2"></span> Telas
-                </NavLink>
-            </li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/permissions">
-                    <span class="bi bi-shield-lock me-2"></span> Permissões
-                </NavLink>
-            </li>
-
-            <li class="nav-item mt-3 px-3 text-muted text-uppercase small">Auditoria</li>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/audits">
-                    <span class="bi bi-activity me-2"></span> Logs
-                </NavLink>
-            </li>
-        </ul>
-    </div>
-
-    <div class="sidebar-footer p-3 border-top text-muted small">
-        <div>© @DateTime.Now.Year FSI</div>
-        <div>v0.1.0</div>
-    </div>
-</nav>
+    <NotAuthorized>
+        <div class="p-3">
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

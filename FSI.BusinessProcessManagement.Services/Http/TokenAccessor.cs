@@ -10,15 +10,39 @@ public sealed class TokenAccessor
     public TokenAccessor(ILocalStorageService storage) => _storage = storage;
 
     public async Task<string?> GetTokenAsync()
-        => await _storage.GetItemAsStringAsync(TokenKey);
+    {
+        try
+        {
+            return await _storage.GetItemAsStringAsync(TokenKey);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+    }
 
     public async Task SetTokenAsync(string? token)
     {
-        if (string.IsNullOrWhiteSpace(token))
-            await _storage.RemoveItemAsync(TokenKey);
-        else
-            await _storage.SetItemAsStringAsync(TokenKey, token);
+        try
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                await _storage.RemoveItemAsync(TokenKey);
+            else
+                await _storage.SetItemAsStringAsync(TokenKey, token);
+        }
+        catch (InvalidOperationException)
+        {
+        }
     }
 
-    public async Task ClearAsync() => await _storage.RemoveItemAsync(TokenKey);
+    public async Task ClearAsync()
+    {
+        try
+        {
+            await _storage.RemoveItemAsync(TokenKey);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
 }
