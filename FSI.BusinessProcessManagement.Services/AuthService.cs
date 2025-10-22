@@ -24,7 +24,10 @@ public sealed class AuthService
     public async Task<bool> LoginAsync(string username, string password, CancellationToken ct = default)
     {
         var req = new LoginRequest { Username = username, Password = password };
-        var httpResp = await _anon.PostAsJsonAsync("/auth/login", req, ct);
+        var url = new Uri(_anon.BaseAddress!, "auth/login");
+        Console.WriteLine($"POST => {url}");
+        var httpResp = await _anon.PostAsJsonAsync("auth/login", req, ct);
+        Console.WriteLine($"http Response => {httpResp}");
         if (!httpResp.IsSuccessStatusCode) return false;
 
         var resp = await httpResp.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: ct);
