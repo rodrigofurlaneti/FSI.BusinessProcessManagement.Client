@@ -1,0 +1,110 @@
+﻿@page "/roles/delete/{RoleId:long}"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using FSI.BusinessProcessManagement.Models.ViewModel
+@attribute [Authorize(Roles = "Administrador")]
+@inject FSI.BusinessProcessManagement.Services.RoleService Roles
+@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
+@inject NavigationManager Nav
+
+<Microsoft.AspNetCore.Components.Web.PageTitle>Excluir perfil</Microsoft.AspNetCore.Components.Web.PageTitle>
+
+<h2 class="mb-3">Excluir perfil</h2>
+
+@if (loading)
+{
+    <div class="alert alert-info">Carregando...</div>
+}
+else
+{
+    <EditForm Model="vm" OnValidSubmit="DeleteAsync">
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Nome</label>
+                <InputText class="form-control" @bind-Value="vm.RoleName" disabled />
+            </div>
+
+            <div class="col-md-8">
+                <label class="form-label">Descrição</label>
+                <InputText class="form-control" @bind-Value="vm.Description" disabled />
+            </div>
+
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-primary" disabled="@saving">@(saving ? "Salvando..." : "Excluir")</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">Cancelar</button>
+        </div>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-danger mt-3">@_error</div>
+}
+
+@code {
+    [Parameter] public long RoleId { get; set; }
+
+    private RoleEditVm vm = new();
+    private RoleDeleteVm rolesDeleteVm = new();
+    private bool loading = true;
+    private bool saving;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Tokens.WaitForTokenAsync(TimeSpan.FromSeconds(3));
+
+            var userObj = await Roles.GetByIdAsync(RoleId);
+            if (userObj is null)
+            {
+                _error = "Perfil não encontrado.";
+                return;
+            }
+
+            vm = new RoleEditVm
+            {
+                RoleId = userObj.RoleId,
+                RoleName = userObj.RoleName ?? string.Empty,
+                Description = userObj.Description ?? string.Empty
+            };
+
+            rolesDeleteVm = new RoleDeleteVm
+            {
+                RoleId = vm.RoleId
+            };
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao carregar perfil: " + ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        try
+        {
+            saving = true;
+            await Roles.DeleteAsync(rolesDeleteVm.RoleId);
+            Nav.NavigateTo("/roles");
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao salvar: " + ex.Message;
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/roles");
+}

@@ -2,7 +2,7 @@
 
 namespace FSI.BusinessProcessManagement.Models.ViewModel
 {
-    public class UserCreateVm
+    public sealed class UserCreateVm
     {
         [Required, MinLength(3)]
         public string Username { get; set; } = string.Empty;

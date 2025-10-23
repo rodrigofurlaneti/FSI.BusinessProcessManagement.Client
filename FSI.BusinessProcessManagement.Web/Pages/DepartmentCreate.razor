@@ -1,0 +1,75 @@
+﻿@page "/departaments/create"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using FSI.BusinessProcessManagement.Models.ViewModel
+@attribute [Authorize(Roles = "Administrador")]
+@inject FSI.BusinessProcessManagement.Services.DepartmentService Departaments
+@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
+@inject NavigationManager Nav
+
+<Microsoft.AspNetCore.Components.Web.PageTitle>Novo departamento</Microsoft.AspNetCore.Components.Web.PageTitle>
+
+<h2 class="mb-3">Novo departamento</h2>
+
+<EditForm Model="vm" OnValidSubmit="SaveAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Nome</label>
+            <InputText class="form-control" @bind-Value="vm.DepartmentName" />
+            <ValidationMessage For="() => vm.DepartmentName" />
+        </div>
+
+        <div class="col-md-8">
+            <label class="form-label">Descrição</label>
+            <InputText class="form-control" @bind-Value="vm.Description" />
+            <ValidationMessage For="() => vm.Description" />
+        </div>
+
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-primary" disabled="@saving">@(saving ? "Salvando..." : "Salvar")</button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">Cancelar</button>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-danger mt-3">@_error</div>
+}
+
+@code {
+    private DepartmentCreateVm vm = new() { };
+    private bool saving;
+    private string? _error;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await Tokens.WaitForTokenAsync(TimeSpan.FromSeconds(3));
+        StateHasChanged();
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            saving = true;
+            await Departaments.CreateAsync(vm);
+            Nav.NavigateTo("/departments");
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao salvar: " + ex.Message;
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/departments");
+}

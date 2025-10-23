@@ -1,16 +1,16 @@
-﻿@page "/users"
+﻿@page "/departments"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 @using FSI.BusinessProcessManagement.Models.Dto
 @using FSI.BusinessProcessManagement.Models.ViewModel
 @attribute [Authorize(Roles = "Administrador")]
-@inject FSI.BusinessProcessManagement.Services.UserService Users
+@inject FSI.BusinessProcessManagement.Services.DepartmentService Departaments
 @inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
 
-<Microsoft.AspNetCore.Components.Web.PageTitle>Usuários</Microsoft.AspNetCore.Components.Web.PageTitle>
+<Microsoft.AspNetCore.Components.Web.PageTitle>Departamentos</Microsoft.AspNetCore.Components.Web.PageTitle>
 
 <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
-    <h2 class="m-0">Usuários</h2>
+    <h2 class="m-0">Departamentos</h2>
 
     <div class="d-flex gap-2 w-100 w-md-auto">
         <InputText class="form-control"
@@ -25,7 +25,7 @@
             <option value="50">50 / pág</option>
         </InputSelect>
 
-        <a id="OpenCreate" name="OpenCreate" class="btn btn-primary" href="/users/create">
+        <a id="OpenCreate" name="OpenCreate" class="btn btn-primary" href="/departaments/create">
             Novo
         </a>
     </div>
@@ -35,9 +35,8 @@
     <table class="table table-sm align-middle">
         <thead class="table-dark">
             <tr>
-                <th>Usuário</th>
-                <th>Email</th>
-                <th style="width:120px;">Ativo</th>
+                <th>Nome</th>
+                <th>Descrição</th>
                 <th style="width:170px;"></th>
             </tr>
         </thead>
@@ -48,28 +47,23 @@
             }
             else if (paged.Count == 0)
             {
-                <tr><td colspan="5" class="text-center py-4">Nenhum usuário encontrado.</td></tr>
+                <tr><td colspan="5" class="text-center py-4">Nenhum perfil encontrado.</td></tr>
             }
             else
             {
                 @foreach (var u in paged)
                 {
                     <tr>
-                        <td class="text-nowrap">@u.Username</td>
-                        <td class="text-break">@u.Email</td>
-                        <td>
-                            <span class="badge @(u.IsActive ? "text-bg-success" : "text-bg-secondary")">
-                                @(u.IsActive ? "Ativo" : "Inativo")
-                            </span>
-                        </td>
+                        <td class="text-nowrap">@u.DepartmentName</td>
+                        <td class="text-break">@u.Description</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a class="btn btn-outline-secondary"
-                                   href="@($"/users/edit/{u.UserId}")">
+                                   href="@($"/departments/edit/{u.DepartmentId}")">
                                     Editar
                                 </a>
                                 <a class="btn btn-outline-danger"
-                                   href="@($"/users/delete/{u.UserId}")">
+                                   href="@($"/departments/delete/{u.DepartmentId}")">
                                     Excluir
                                 </a>
                             </div>
@@ -104,19 +98,19 @@
     </nav>
 }
 
-@if (showDelete && deletingUser is not null)
+@if (showDelete && deletingDepartment is not null)
 {
     <div class="modal fade show" style="display:block;" tabindex="-1" aria-modal="true" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Excluir usuário</h5>
+                    <h5 class="modal-title">Excluir perfil</h5>
                     <button type="button" class="btn-close" @onclick="CloseDelete"></button>
                 </div>
 
                 <div class="modal-body">
-                    Tem certeza que deseja excluir <strong>@deletingUser.Username</strong>?
+                    Tem certeza que deseja excluir <strong>@deletingDepartment.DepartmentName</strong>?
                 </div>
 
                 <div class="modal-footer">
@@ -139,14 +133,14 @@
 
 @code {
     private bool loading;
-    private List<UserDto> all = new();
-    private List<UserDto> filtered = new();
-    private List<UserDto> paged = new();
+    private List<DepartmentDto> all = new();
+    private List<DepartmentDto> filtered = new();
+    private List<DepartmentDto> paged = new();
     private int page = 1, totalPages = 1;
     private bool showEdit, saving;
     private bool showDelete, deleting;
-    private UserDto? deletingUser;
-    private UserEditVm vm = new();
+    private DepartmentDto? deletingDepartment;
+    private DepartmentEditVm vm = new();
     private string? _error;
 
     // filtro + debounce
@@ -215,11 +209,11 @@
         {
             loading = true;
             _error = null;
-            all = await Users.GetAllAsync() ?? new();
+            all = await Departaments.GetAllAsync() ?? new();
         }
         catch (Exception ex)
         {
-            _error = "Falha ao carregar usuários: " + ex.Message;
+            _error = "Falha ao carregar departamentos: " + ex.Message;
             all = new();
         }
         finally
@@ -238,8 +232,8 @@
         filtered = string.IsNullOrEmpty(f)
           ? all
           : all.Where(u =>
-                (u.Username ?? string.Empty).ToLowerInvariant().Contains(f)
-             || (u.Email ?? string.Empty).ToLowerInvariant().Contains(f))
+                (u.DepartmentName ?? string.Empty).ToLowerInvariant().Contains(f)
+             || (u.Description ?? string.Empty).ToLowerInvariant().Contains(f))
                .ToList();
 
         totalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)_pageSize));
@@ -255,46 +249,44 @@
 
     private void OpenCreate()
     {
-        vm = new UserEditVm { IsActive = true };
+        vm = new DepartmentEditVm { };
         showEdit = true;
     }
 
-    private void OpenEdit(UserDto u)
+    private void OpenEdit(DepartmentDto u)
     {
-        vm = new UserEditVm
+        vm = new DepartmentEditVm
         {
-            UserId = u.UserId,
-            Username = u.Username,
-            Email = u.Email,
             DepartmentId = u.DepartmentId,
-            IsActive = u.IsActive
+            DepartmentName = u.DepartmentName,
+            Description = u.Description
         };
         showEdit = true;
     }
 
     private void CloseEdit() => showEdit = false;
 
-    private void OpenDelete(UserDto u)
+    private void OpenDelete(DepartmentDto u)
     {
-        deletingUser = u;
+        deletingDepartment = u;
         showDelete = true;
     }
 
     private void CloseDelete()
     {
         showDelete = false;
-        deletingUser = null;
+        deletingDepartment = null;
     }
 
     private async Task DeleteAsync()
     {
-        if (deletingUser is null) return;
+        if (deletingDepartment is null) return;
         deleting = true;
-        await Users.DeleteAsync(deletingUser.UserId);
+        await Departaments.DeleteAsync(deletingDepartment.DepartmentId);
         deleting = false;
         showDelete = false;
 
-        all.RemoveAll(x => x.UserId == deletingUser.UserId);
+        all.RemoveAll(x => x.DepartmentId == deletingDepartment.DepartmentId);
         ApplyFilterAndPaging(page);
     }
 }

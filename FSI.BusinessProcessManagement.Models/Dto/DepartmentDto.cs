@@ -2,8 +2,8 @@
 {
     public sealed class DepartmentDto
     {
-        public long Id { get; set; }
-        public string Name { get; set; } = string.Empty;
+        public long DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = string.Empty;
         public string? Description { get; set; }
     }
 }

@@ -1,0 +1,108 @@
+﻿@page "/departments/edit/{DepartmentId:long}"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using FSI.BusinessProcessManagement.Models.ViewModel
+@attribute [Authorize(Roles = "Administrador")]
+@inject FSI.BusinessProcessManagement.Services.DepartmentService Departments
+@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
+@inject NavigationManager Nav
+
+<Microsoft.AspNetCore.Components.Web.PageTitle>Editar departamento</Microsoft.AspNetCore.Components.Web.PageTitle>
+
+<h2 class="mb-3">Editar departamento</h2>
+
+@if (loading)
+{
+    <div class="alert alert-info">Carregando...</div>
+}
+else
+{
+    <EditForm Model="vm" OnValidSubmit="EditAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Departamento</label>
+                <InputText class="form-control" @bind-Value="vm.DepartmentName" />
+                <ValidationMessage For="() => vm.DepartmentName" />
+            </div>
+
+            <div class="col-md-8">
+                <label class="form-label">Descrição</label>
+                <InputText class="form-control" @bind-Value="vm.Description" />
+                <ValidationMessage For="() => vm.Description" />
+            </div>
+
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-primary" disabled="@saving">@(saving ? "Salvando..." : "Editar alterações")</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">Cancelar</button>
+        </div>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-danger mt-3">@_error</div>
+}
+
+@code {
+    [Parameter] public long DepartmentId { get; set; }
+
+    private DepartmentEditVm vm = new();
+    private bool loading = true;
+    private bool saving;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Tokens.WaitForTokenAsync(TimeSpan.FromSeconds(3));
+
+            var departmentObj = await Departments.GetByIdAsync(DepartmentId);
+            if (departmentObj is null)
+            {
+                _error = "Departamento não encontrado.";
+                return;
+            }
+
+            vm = new DepartmentEditVm
+            {
+                DepartmentId = departmentObj.DepartmentId,
+                DepartmentName = departmentObj.DepartmentName ?? string.Empty,
+                Description = departmentObj.Description
+            };
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao carregar departamento: " + ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task EditAsync()
+    {
+        try
+        {
+            saving = true;
+            await Departments.UpdateAsync(vm);
+            Nav.NavigateTo("/departments?updated=1");
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao salvar: " + ex.Message;
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/departments");
+}
