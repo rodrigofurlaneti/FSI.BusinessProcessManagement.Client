@@ -1,9 +1,13 @@
-﻿@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
+﻿@inject Microsoft.JSInterop.IJSRuntime JS
+@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
 
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        _ = await Tokens.GetTokenAsync();
+
+        var token = await JS.InvokeAsync<string>("appAuth.getToken", Array.Empty<object>());
+        if (!string.IsNullOrWhiteSpace(token))
+            await Tokens.SetTokenAsync(token);
     }
 }
