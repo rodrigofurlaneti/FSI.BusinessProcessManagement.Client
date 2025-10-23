@@ -1,0 +1,13 @@
+﻿@inject AuthenticationStateProvider Auth
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        if (Auth is FSI.BusinessProcessManagement.Services.Auth.JwtAuthenticationStateProvider jwt)
+        {
+            await jwt.NotifyClientReadyAsync();
+        }
+    }
+}

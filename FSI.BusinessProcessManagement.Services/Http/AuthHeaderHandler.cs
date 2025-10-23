@@ -2,20 +2,29 @@
 
 namespace FSI.BusinessProcessManagement.Services.Http
 {
-    public sealed class AuthHeaderHandler : DelegatingHandler
+    public class AuthHeaderHandler : DelegatingHandler
     {
         private readonly TokenAccessor _tokens;
         public AuthHeaderHandler(TokenAccessor tokens) => _tokens = tokens;
 
-        protected override async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
-            var token = await _tokens.GetTokenAsync();
-            if (!string.IsNullOrWhiteSpace(token))
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            try
+            {
+                var token = await _tokens.GetTokenAsync();
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    request.Headers.Authorization =
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+            }
+            catch
+            {
+                // não propaga erro de JS/LocalStorage durante prerender
+            }
 
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, ct);
         }
     }
+
 }

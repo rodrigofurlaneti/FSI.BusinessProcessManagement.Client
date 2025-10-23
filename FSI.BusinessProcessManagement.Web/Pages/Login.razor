@@ -1,9 +1,15 @@
 ﻿@page "/login"
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
 @using FSI.BusinessProcessManagement.Services
+
+@attribute [AllowAnonymous]
 @inject AuthService Auth
 @inject NavigationManager Nav
-@layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
+
+@* Se quiser que a tela de login não use o MainLayout, deixe sem @layout (ou use um layout minimal) *@
+@* @layout null *@
 
 <div class="auth-center">
     <div class="card w-100" style="max-width:520px">
@@ -16,7 +22,7 @@
 
                 <div class="mb-3">
                     <label class="form-label">Usuário</label>
-                    <InputText class="form-control" @bind-Value="_vm.Username" />
+                    <InputText class="form-control" @bind-Value="_vm.Username" autofocus />
                 </div>
 
                 <div class="mb-3">
@@ -38,6 +44,9 @@
 </div>
 
 @code {
+    // Captura ?returnUrl=/alvo após redirecionamento
+    [SupplyParameterFromQuery] public string? returnUrl { get; set; }
+
     private record LoginVm
     {
         [Required] public string Username { get; set; } = string.Empty;
@@ -50,13 +59,30 @@
 
     private async Task DoLogin()
     {
+        if (_loading) return;
         _loading = true;
         _error = null;
 
-        var ok = await Auth.LoginAsync(_vm.Username, _vm.Password);
-        _loading = false;
+        try
+        {
+            var ok = await Auth.LoginAsync(_vm.Username, _vm.Password);
 
-        if (ok) Nav.NavigateTo("/", forceLoad: true);
-        else _error = "Usuário ou senha inválidos.";
+            if (ok)
+            {
+                var target = string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl!;
+                Nav.NavigateTo(target, replace: true);
+                return;
+            }
+
+            _error = "Usuário ou senha inválidos.";
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao autenticar. " + ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 }

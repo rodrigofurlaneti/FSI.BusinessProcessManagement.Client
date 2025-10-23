@@ -1,7 +1,8 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+@attribute [AllowAnonymous]
 @layout FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout
+
 <p style="font-size:18px;">Bem-vindo a gestão de processos de negócio, otimização geral da empresa</p>
 <p style="font-size:16px;">Objetivo:</p>
 <p style="font-size:14px;"><b>Mapear</b>, <b>analisar</b>, <b>otimizar</b> e monitorar processos.</p>

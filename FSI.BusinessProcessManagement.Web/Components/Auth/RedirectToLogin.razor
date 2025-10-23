@@ -1,0 +1,20 @@
+﻿@inject NavigationManager Nav
+@inject AuthenticationStateProvider Auth
+
+<p class="text-muted px-3 py-2">Redirecionando para login...</p>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var state = await Auth.GetAuthenticationStateAsync();
+        var isAuth = state.User?.Identity?.IsAuthenticated == true;
+
+        if (!isAuth)
+        {
+            var returnUrl = Uri.EscapeDataString(Nav.Uri);
+            Nav.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: true);
+        }
+    }
+}

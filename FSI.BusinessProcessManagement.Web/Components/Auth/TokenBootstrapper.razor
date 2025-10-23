@@ -1,0 +1,9 @@
+﻿@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _ = await Tokens.GetTokenAsync();
+    }
+}

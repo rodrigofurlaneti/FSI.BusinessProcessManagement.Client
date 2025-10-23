@@ -179,3 +179,24 @@ body {
     justify-content: center; /* horizontal */
     padding: 24px; /* respiro em telas pequenas */
 }
+
+/* Sidebar fixa abaixo da navbar (altura ~56px) */
+.sidebar-sticky {
+    position: sticky;
+    top: 56px;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+}
+
+/* Melhor clique no list-group */
+.list-group-item {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+/* Em telas pequenas, o offcanvas ocupa 80% da largura */
+@media (max-width: 767.98px) {
+    .offcanvas-start {
+        width: 80%;
+    }
+}

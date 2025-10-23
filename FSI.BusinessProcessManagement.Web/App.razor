@@ -1,13 +1,43 @@
-﻿<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="typeof(FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout)" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <LayoutView Layout="typeof(FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout)">
-                <p>Desculpe, página não encontrada.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-</CascadingAuthenticationState>
+﻿@using Microsoft.AspNetCore.Components.Web
+@using FSI.BusinessProcessManagement.Web.Components.Auth
+
+<ErrorBoundary @ref="_eb">
+    <ChildContent>
+        <CascadingAuthenticationState>
+            <Router AppAssembly="@typeof(App).Assembly">
+                <Found Context="routeData">
+                    <AuthorizeRouteView RouteData="@routeData"
+                                        DefaultLayout="typeof(FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout)">
+                        <NotAuthorized>
+                            <RedirectToLogin />
+                        </NotAuthorized>
+                    </AuthorizeRouteView>
+                    <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                </Found>
+                <NotFound>
+                    <LayoutView Layout="typeof(FSI.BusinessProcessManagement.Web.Components.Layout.MainLayout)">
+                        <p>Desculpe, página não encontrada.</p>
+                    </LayoutView>
+                </NotFound>
+            </Router>
+        </CascadingAuthenticationState>
+    </ChildContent>
+
+    <ErrorContent Context="ex">
+        <div class="alert alert-danger m-3">
+            <strong>Erro:</strong> @ex.Message
+        </div>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Recover">
+            Tentar novamente
+        </button>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private ErrorBoundary? _eb;
+
+    private void Recover()
+    {
+        _eb?.Recover();
+    }
+}

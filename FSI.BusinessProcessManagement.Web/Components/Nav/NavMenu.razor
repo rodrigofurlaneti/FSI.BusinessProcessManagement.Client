@@ -1,25 +1,7 @@
-﻿@using Microsoft.AspNetCore.Components.Routing
-@inject NavigationManager Nav
-
-<AuthorizeView>
-    <Authorized>
-        <nav class="sidebar">
-            <h5>Navegação</h5>
-            <ul>
-                <li><NavLink href="/">Home</NavLink></li>
-                <li><NavLink href="/dashboard">Dashboard</NavLink></li>
-                <li><NavLink href="/processos">Processos</NavLink></li>
-                <li><NavLink href="/setores">Setores</NavLink></li>
-                <li><NavLink href="/usuarios">Usuários</NavLink></li>
-                <li><NavLink href="/perfis">Perfis</NavLink></li>
-                <li><NavLink href="/telas">Telas</NavLink></li>
-                <li><NavLink href="/permissoes">Permissões</NavLink></li>
-            </ul>
-        </nav>
-    </Authorized>
-
-    <NotAuthorized>
-        <div class="p-3">
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+﻿<nav class="list-group list-group-flush sidebar-sticky">
+    <NavLink href="/" class="list-group-item list-group-item-action" ActiveClass="active">Home</NavLink>
+    <NavLink href="/dashboard" class="list-group-item list-group-item-action" ActiveClass="active">Dashboard</NavLink>
+    <NavLink href="/processos" class="list-group-item list-group-item-action" ActiveClass="active">Processos</NavLink>
+    <NavLink href="/setores" class="list-group-item list-group-item-action" ActiveClass="active">Setores</NavLink>
+    <NavAuthorizeMenu/>
+</nav>

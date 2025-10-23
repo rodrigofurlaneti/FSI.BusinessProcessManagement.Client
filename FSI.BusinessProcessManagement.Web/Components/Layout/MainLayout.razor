@@ -3,57 +3,63 @@
 @inject NavigationManager Nav
 @inject FSI.BusinessProcessManagement.Services.AuthService Auth
 
-<div class="app-shell">
-    <header class="app-header shadow-sm">
-        <div class="container-fluid d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-3">
-                <img src="processo.png" alt="Gestão de processos de negócio" class="logo" />
-                <a class="brand" href="/">Gestão de processos</a>
+<AuthorizeView>
+    <Authorized Context="ctx">
+        <header class="navbar navbar-dark bg-dark sticky-top">
+            <div class="container-fluid">
+                <button class="btn btn-outline-light d-lg-none"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#appOffcanvas"
+                        aria-controls="appOffcanvas"
+                        aria-label="Abrir menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <a class="navbar-brand ms-2" href="/">Gestão de processos</a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="navbar-text small d-none d-sm-inline">@ctx.User.Identity?.Name</span>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="DoLogout">Sair</button>
+                </div>
             </div>
-            <div class="app-body">
-                <AuthorizeView>
-                    <Authorized>
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="text-muted small">
-                                @GetUserDisplayName(context.User)
-                            </span>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="DoLogout">Sair</button>
-                        </div>
-                    </Authorized>
-                    <NotAuthorized>
-                        <a class="btn btn-sm btn-primary" href="/login">Entrar</a>
-                    </NotAuthorized>
-                </AuthorizeView>
+        </header>
+
+        <div class="container-fluid">
+            <div class="row">
+                <aside class="col-lg-2 border-end p-0 d-none d-lg-block">
+                    <FSI.BusinessProcessManagement.Web.Components.Nav.NavMenu />
+                </aside>
+
+                <main class="col-lg-10 p-3">
+                    <FSI.BusinessProcessManagement.Web.Components.Auth.TokenBootstrapper />
+                    <FSI.BusinessProcessManagement.Web.Components.Auth.AuthRefresher />
+                    @Body
+                </main>
             </div>
         </div>
-    </header>
 
-    <div class="app-body">
-        <aside class="app-aside d-none d-md-block">
-            <FSI.BusinessProcessManagement.Web.Components.Nav.NavMenu />
-        </aside>
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="appOffcanvas" aria-labelledby="appOffcanvasLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="appOffcanvasLabel">Navegação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+            </div>
+            <div class="offcanvas-body p-0">
+                <FSI.BusinessProcessManagement.Web.Components.Nav.NavMenu />
+            </div>
+        </div>
+    </Authorized>
 
-        <main class="app-main p-3">
-            @Body
-        </main>
-    </div>
-</div>
+    <NotAuthorized>
+        <FSI.BusinessProcessManagement.Web.Components.Auth.TokenBootstrapper />
+        <FSI.BusinessProcessManagement.Web.Components.Auth.AuthRefresher />
+        <main class="container py-4">@Body</main>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private async Task DoLogout()
     {
-        await Auth.LogoutAsync();
-        Nav.NavigateTo("/login", forceLoad: true);
-    }
-
-    private static string GetUserDisplayName(System.Security.Claims.ClaimsPrincipal user)
-    {
-        var name = user.Identity?.Name
-                   ?? user.FindFirst("name")?.Value
-                   ?? user.FindFirst("unique_name")?.Value
-                   ?? user.FindFirst("preferred_username")?.Value
-                   ?? user.FindFirst("sub")?.Value;
-
-        return string.IsNullOrWhiteSpace(name) ? "Usuário" : name!;
+        await Auth.LogoutAsync(); 
+        Nav.NavigateTo("/login", replace: true);
     }
 }
