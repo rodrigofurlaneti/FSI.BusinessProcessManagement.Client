@@ -2,9 +2,8 @@
 
 namespace FSI.BusinessProcessManagement.Models.ViewModel
 {
-    public sealed class UserEditVm
+    public class UserCreateVm
     {
-        public long UserId { get; set; }
         [Required, MinLength(3)]
         public string Username { get; set; } = string.Empty;
 

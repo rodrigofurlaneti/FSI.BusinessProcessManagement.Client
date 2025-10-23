@@ -8,6 +8,6 @@
 
         var token = await JS.InvokeAsync<string>("appAuth.getToken", Array.Empty<object>());
         if (!string.IsNullOrWhiteSpace(token))
-            await Tokens.SetTokenAsync(token);
+            await Tokens.SetTokenAsync(token); // grava no cache e no localStorage
     }
 }

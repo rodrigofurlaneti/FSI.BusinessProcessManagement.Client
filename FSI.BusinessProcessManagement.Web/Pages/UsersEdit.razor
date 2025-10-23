@@ -1,0 +1,128 @@
+﻿@page "/users/edit/{UserId:long}"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using FSI.BusinessProcessManagement.Models.ViewModel
+@attribute [Authorize(Roles = "Administrador")]
+@inject FSI.BusinessProcessManagement.Services.UserService Users
+@inject FSI.BusinessProcessManagement.Services.Http.TokenAccessor Tokens
+@inject NavigationManager Nav
+
+<Microsoft.AspNetCore.Components.Web.PageTitle>Editar usuário</Microsoft.AspNetCore.Components.Web.PageTitle>
+
+<h2 class="mb-3">Editar usuário</h2>
+
+@if (loading)
+{
+    <div class="alert alert-info">Carregando...</div>
+}
+else
+{
+    <EditForm Model="vm" OnValidSubmit="EditAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Usuário</label>
+                <InputText class="form-control" @bind-Value="vm.Username" />
+                <ValidationMessage For="() => vm.Username" />
+            </div>
+
+            <div class="col-md-8">
+                <label class="form-label">Email</label>
+                <InputText class="form-control" @bind-Value="vm.Email" />
+                <ValidationMessage For="() => vm.Email" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Departamento</label>
+                <InputNumber TValue="long?" class="form-control" @bind-Value="vm.DepartmentId" />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Nova senha*</label>
+                <InputText class="form-control" type="password" @bind-Value="vm.PasswordHash" />
+                <div class="form-text">Deixe em branco.</div>
+            </div>
+
+            <div class="col-12">
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="vm.IsActive" />
+                    <label class="form-check-label">Ativo</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-primary" disabled="@saving">@(saving ? "Salvando..." : "Salvar alterações")</button>
+            <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">Cancelar</button>
+        </div>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <div class="alert alert-danger mt-3">@_error</div>
+}
+
+@code {
+    [Parameter] public long UserId { get; set; }
+
+    private UserEditVm vm = new();
+    private bool loading = true;
+    private bool saving;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Tokens.WaitForTokenAsync(TimeSpan.FromSeconds(3));
+
+            var userObj = await Users.GetByIdAsync(UserId);
+            if (userObj is null)
+            {
+                _error = "Usuário não encontrado.";
+                return;
+            }
+
+            vm = new UserEditVm
+            {
+                UserId = userObj.UserId,
+                Username = userObj.Username ?? string.Empty,
+                Email = userObj.Email,
+                DepartmentId = userObj.DepartmentId,
+                IsActive = userObj.IsActive,
+                PasswordHash = userObj.PasswordHash
+            };
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao carregar usuário: " + ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task EditAsync()
+    {
+        try
+        {
+            saving = true;
+            await Users.UpdateAsync(vm);
+            Nav.NavigateTo("/users?updated=1");
+        }
+        catch (Exception ex)
+        {
+            _error = "Falha ao salvar: " + ex.Message;
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    private void Cancel() => Nav.NavigateTo("/users");
+}

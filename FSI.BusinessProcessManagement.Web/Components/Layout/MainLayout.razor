@@ -5,6 +5,9 @@
 
 <AuthorizeView>
     <Authorized Context="ctx">
+        <FSI.BusinessProcessManagement.Web.Components.Auth.TokenBootstrapper />
+        <FSI.BusinessProcessManagement.Web.Components.Auth.AuthRefresher />
+
         <header class="navbar navbar-dark bg-dark sticky-top">
             <div class="container-fluid">
                 <button class="btn btn-outline-light d-lg-none"
@@ -31,8 +34,6 @@
                 </aside>
 
                 <main class="col-lg-10 p-3">
-                    <FSI.BusinessProcessManagement.Web.Components.Auth.TokenBootstrapper />
-                    <FSI.BusinessProcessManagement.Web.Components.Auth.AuthRefresher />
                     @Body
                 </main>
             </div>
@@ -52,14 +53,17 @@
     <NotAuthorized>
         <FSI.BusinessProcessManagement.Web.Components.Auth.TokenBootstrapper />
         <FSI.BusinessProcessManagement.Web.Components.Auth.AuthRefresher />
-        <main class="container py-4">@Body</main>
+
+        <main class="container py-4">
+            @Body
+        </main>
     </NotAuthorized>
 </AuthorizeView>
 
 @code {
     private async Task DoLogout()
     {
-        await Auth.LogoutAsync(); 
+        await Auth.LogoutAsync();
         Nav.NavigateTo("/login", replace: true);
     }
 }

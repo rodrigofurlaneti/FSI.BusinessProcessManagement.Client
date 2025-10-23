@@ -14,17 +14,20 @@
 
     <div class="d-flex gap-2 w-100 w-md-auto">
         <InputText class="form-control"
-                   placeholder="Filtrar por usuário ou e-mail..."
-                   @bind-Value="Filter" @bind-Value:event="oninput" />
+                   Value=""
+                   ValueChanged="OnFilterChanged"
+                   ValueExpression="() => Filter" />
 
-        <InputSelect class="form-select" style="max-width:140px" @bind-Value="PageSize">
+        <InputSelect class="form-select" style="max-width:140px" @bind-Value="PageSize" TValue="int">
             <option value="5">5 / pág</option>
             <option value="10">10 / pág</option>
             <option value="20">20 / pág</option>
             <option value="50">50 / pág</option>
         </InputSelect>
 
-        <button class="btn btn-primary" @onclick="OpenCreate">Novo</button>
+        <a id="OpenCreate" name="OpenCreate" class="btn btn-primary" href="/users/create">
+            Novo
+        </a>
     </div>
 </div>
 
@@ -53,7 +56,7 @@
                 @foreach (var u in paged)
                 {
                     <tr>
-                        <td>@u.Id</td>
+                        <td>@u.UserId</td>
                         <td class="text-nowrap">@u.Username</td>
                         <td class="text-break">@u.Email</td>
                         <td>
@@ -63,8 +66,14 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-secondary" @onclick="() => OpenEdit(u)">Editar</button>
-                                <button class="btn btn-outline-danger" @onclick="() => OpenDelete(u)">Excluir</button>
+                                <a class="btn btn-outline-secondary"
+                                   href="@($"/users/edit/{u.UserId}")">
+                                    Editar
+                                </a>
+                                <a class="btn btn-outline-danger"
+                                   href="@($"/users/delete/{u.UserId}")">
+                                    Excluir
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -95,69 +104,6 @@
             </li>
         </ul>
     </nav>
-}
-
-@if (showEdit)
-{
-    <div class="modal fade show" style="display:block;" tabindex="-1" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h5 class="modal-title">@((vm.Id == 0) ? "Novo usuário" : $"Editar usuário #{vm.Id}")</h5>
-                    <button type="button" class="btn-close" @onclick="CloseEdit"></button>
-                </div>
-
-                <EditForm Model="vm" OnValidSubmit="SaveAsync">
-                    <DataAnnotationsValidator />
-                    <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Usuário</label>
-                                <InputText class="form-control" @bind-Value="vm.Username" />
-                                <ValidationMessage For="() => vm.Username" />
-                            </div>
-
-                            <div class="col-md-8">
-                                <label class="form-label">Email</label>
-                                <InputText class="form-control" @bind-Value="vm.Email" />
-                                <ValidationMessage For="() => vm.Email" />
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Departamento (opcional)</label>
-                                <InputNumber class="form-control" @bind-Value="vm.DepartmentId" />
-                                <div class="form-text">Informe o ID do departamento (se aplicável).</div>
-                            </div>
-
-                            @if (vm.Id == 0)
-                            {
-                                <div class="col-md-6">
-                                    <label class="form-label">Senha inicial</label>
-                                    <InputText class="form-control" type="password" @bind-Value="vm.InitialPassword" />
-                                    <ValidationMessage For="() => vm.InitialPassword" />
-                                </div>
-                            }
-
-                            <div class="col-12">
-                                <div class="form-check">
-                                    <InputCheckbox class="form-check-input" @bind-Value="vm.IsActive" />
-                                    <label class="form-check-label">Ativo</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" @onclick="CloseEdit">Cancelar</button>
-                        <button class="btn btn-primary" disabled="@saving">@(saving ? "Salvando..." : "Salvar")</button>
-                    </div>
-                </EditForm>
-
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
 }
 
 @if (showDelete && deletingUser is not null)
@@ -222,7 +168,23 @@
         }
     }
 
-    // filtro controlado por propriedade
+    private void OnFilterChanged(string? value)
+    {
+        Filter = value;
+        // seu debounce aqui...
+        filterTimer?.Stop();
+        if (filterTimer is null)
+        {
+            filterTimer = new System.Timers.Timer(300) { AutoReset = false };
+            filterTimer.Elapsed += (_, __) => InvokeAsync(() =>
+            {
+                ApplyFilterAndPaging(1);
+                StateHasChanged();
+            });
+        }
+        filterTimer.Start();
+    }
+
     private string? Filter
     {
         get => filter;
@@ -244,13 +206,7 @@
     {
         if (!firstRender) return;
 
-        // (opcional) aguarda token hidratar, se necessário
-        for (var i = 0; i < 20; i++)
-        {
-            var tk = await Tokens.GetTokenAsync();
-            if (!string.IsNullOrWhiteSpace(tk)) break;
-            await Task.Delay(100);
-        }
+        await Tokens.WaitForTokenAsync(TimeSpan.FromSeconds(3));
 
         await LoadAsync();
     }
@@ -309,7 +265,7 @@
     {
         vm = new UserEditVm
         {
-            Id = u.Id,
+            UserId = u.UserId,
             Username = u.Username,
             Email = u.Email,
             DepartmentId = u.DepartmentId,
@@ -319,19 +275,6 @@
     }
 
     private void CloseEdit() => showEdit = false;
-
-    private async Task SaveAsync()
-    {
-        saving = true;
-
-        if (vm.Id == 0) await Users.CreateAsync(vm);
-        else await Users.UpdateAsync(vm);
-
-        saving = false;
-        showEdit = false;
-
-        await LoadAsync();
-    }
 
     private void OpenDelete(UserDto u)
     {
@@ -349,11 +292,11 @@
     {
         if (deletingUser is null) return;
         deleting = true;
-        await Users.DeleteAsync(deletingUser.Id);
+        await Users.DeleteAsync(deletingUser.UserId);
         deleting = false;
         showDelete = false;
 
-        all.RemoveAll(x => x.Id == deletingUser.Id);
+        all.RemoveAll(x => x.UserId == deletingUser.UserId);
         ApplyFilterAndPaging(page);
     }
 }

@@ -1,56 +1,51 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 
-namespace FSI.BusinessProcessManagement.Services.Http;
-
-public sealed class TokenAccessor
+namespace FSI.BusinessProcessManagement.Services.Http
 {
-    private readonly ILocalStorageService _storage;
-    public const string TokenKey = "auth_token";
-    private string? _cached;
-
-    public TokenAccessor(ILocalStorageService storage) => _storage = storage;
-
-    public async Task<string?> GetTokenAsync()
+    public sealed class TokenAccessor
     {
-        // 1º: cache (não depende de JS)
-        if (!string.IsNullOrWhiteSpace(_cached))
-            return _cached;
+        private readonly ILocalStorageService _storage;
+        public const string TokenKey = "auth_token";
+        private string? _cached;
 
-        // 2º: fallback para localStorage (JS) — pode não estar disponível em todos os momentos
-        try
+        public TokenAccessor(ILocalStorageService storage) => _storage = storage;
+        public Task<string?> GetTokenAsync() => Task.FromResult(_cached);
+
+        public async Task<string?> WaitForTokenAsync(TimeSpan? timeout = null, CancellationToken ct = default)
         {
-            var fromLs = await _storage.GetItemAsStringAsync(TokenKey);
-            _cached = string.IsNullOrWhiteSpace(fromLs) ? null : fromLs;
+            timeout ??= TimeSpan.FromSeconds(3);
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            while (string.IsNullOrWhiteSpace(_cached) && sw.Elapsed < timeout && !ct.IsCancellationRequested)
+                await Task.Delay(100, ct); 
+
             return _cached;
         }
-        catch (InvalidOperationException) { return null; }
-        catch (JSDisconnectedException) { return null; }
-        catch (JSException) { return null; }
-    }
 
-    public async Task SetTokenAsync(string? token)
-    {
-        _cached = string.IsNullOrWhiteSpace(token) ? null : token;
-
-        try
+        public async Task SetTokenAsync(string? token)
         {
-            if (_cached is null)
-                await _storage.RemoveItemAsync(TokenKey);
-            else
-                await _storage.SetItemAsStringAsync(TokenKey, _cached);
+            _cached = string.IsNullOrWhiteSpace(token) ? null : token;
+
+            try
+            {
+                if (_cached is null) await _storage.RemoveItemAsync(TokenKey);
+                else await _storage.SetItemAsStringAsync(TokenKey, _cached);
+            }
+            catch (InvalidOperationException) { }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
         }
-        catch (InvalidOperationException) { }
-        catch (JSDisconnectedException) { }
-        catch (JSException) { }
+
+        public async Task ClearAsync()
+        {
+            _cached = null;
+            try { await _storage.RemoveItemAsync(TokenKey); }
+            catch (InvalidOperationException) { }
+            catch (JSDisconnectedException) { }
+            catch (JSException) { }
+        }
     }
 
-    public async Task ClearAsync()
-    {
-        _cached = null;
-        try { await _storage.RemoveItemAsync(TokenKey); }
-        catch (InvalidOperationException) { }
-        catch (JSDisconnectedException) { }
-        catch (JSException) { }
-    }
 }
+
