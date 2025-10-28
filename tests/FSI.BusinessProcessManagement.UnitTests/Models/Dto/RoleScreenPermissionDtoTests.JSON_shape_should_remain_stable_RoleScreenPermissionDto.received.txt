@@ -1,0 +1,9 @@
+﻿{
+  "id": 1,
+  "roleId": 2,
+  "screenId": 3,
+  "canView": true,
+  "canCreate": true,
+  "canEdit": false,
+  "canDelete": false
+}

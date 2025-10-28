@@ -1,0 +1,4 @@
+﻿{
+  "departmentName": "Jur\u00EDdico",
+  "description": "Respons\u00E1vel por contratos e conformidade"
+}

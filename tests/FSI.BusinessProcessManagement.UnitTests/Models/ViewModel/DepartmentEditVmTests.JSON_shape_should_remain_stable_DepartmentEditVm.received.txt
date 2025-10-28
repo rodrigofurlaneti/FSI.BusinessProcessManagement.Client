@@ -1,0 +1,5 @@
+﻿{
+  "departmentId": 100,
+  "departmentName": "Jur\u00EDdico",
+  "description": "Respons\u00E1vel pelos contratos"
+}

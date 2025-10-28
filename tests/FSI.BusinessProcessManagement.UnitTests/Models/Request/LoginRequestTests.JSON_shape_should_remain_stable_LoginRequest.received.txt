@@ -1,0 +1,4 @@
+﻿{
+  "username": "usuario.teste",
+  "password": "senhaSegura123"
+}

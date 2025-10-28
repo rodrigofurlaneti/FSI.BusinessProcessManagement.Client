@@ -1,0 +1,5 @@
+﻿{
+  "id": 1,
+  "name": "Home",
+  "description": "Tela inicial do sistema"
+}

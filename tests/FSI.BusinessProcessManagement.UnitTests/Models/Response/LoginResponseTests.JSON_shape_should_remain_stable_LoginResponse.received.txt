@@ -1,0 +1,11 @@
+﻿{
+  "accessToken": "jwt.sample.token",
+  "tokenType": "Bearer",
+  "expiresAtUtc": "2025-10-28T03:21:18.8368878Z",
+  "userId": 99,
+  "username": "usuario.teste",
+  "roles": [
+    "Administrador",
+    "Leitura"
+  ]
+}
